@@ -35,30 +35,38 @@ export default function HowItWorks() {
   }, [])
 
   return (
-    <section ref={rootRef} id="como-funciona" aria-labelledby="hiw-title">
+    <section ref={rootRef} id="como-funciona" aria-labelledby="hiw-title"
+      style={{ background: '#F5F5F5', padding: 'var(--space-8) 0' }}>
       <div className="container">
         <div className="section-head hiw-head">
-          <span className="eyebrow">Como funciona</span>
-          <h2 id="hiw-title">Simples, rápido e sem complicação</h2>
+          <span className="eyebrow" style={{ color: '#C49B0A' }}>Como funciona</span>
+          <h2 id="hiw-title" style={{ color: '#111' }}>Simples, rápido e sem complicação</h2>
         </div>
 
         <div className="hiw-steps" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'var(--space-5)' }}>
           {STEPS.map((step) => (
-            <article key={step.num} className="hiw-step card" style={{ position: 'relative', overflow: 'hidden' }}>
+            <article key={step.num} className="hiw-step" style={{
+              position: 'relative', overflow: 'hidden',
+              background: '#fff',
+              border: '1px solid #E0E0E0',
+              borderRadius: 'var(--radius-lg)',
+              padding: 'var(--space-5)',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+            }}>
               <span aria-hidden="true" style={{
                 position: 'absolute', right: 14, top: 6,
                 fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 80,
-                lineHeight: 1, color: 'rgba(245,197,24,0.06)', userSelect: 'none',
+                lineHeight: 1, color: 'rgba(245,197,24,0.12)', userSelect: 'none',
               }}>{step.num}</span>
               <div className="step-num" aria-hidden="true" style={{
                 width: 48, height: 48, borderRadius: 'var(--radius-md)',
-                background: 'var(--color-yellow)', color: 'var(--color-bg)',
+                background: 'var(--color-yellow)', color: '#0A0A0A',
                 fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 22,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: 'var(--space-4)',
               }}>{step.num}</div>
-              <h3 style={{ marginBottom: 'var(--space-3)' }}>{step.title}</h3>
-              <p style={{ color: 'var(--color-gray-light)', fontSize: 15, lineHeight: 1.65 }}>{step.body}</p>
+              <h3 style={{ marginBottom: 'var(--space-3)', color: '#111' }}>{step.title}</h3>
+              <p style={{ color: '#555', fontSize: 15, lineHeight: 1.65 }}>{step.body}</p>
             </article>
           ))}
         </div>

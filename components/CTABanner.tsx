@@ -13,7 +13,7 @@ interface CTABannerProps {
   btnLabel: string
   wppMsg: string
   utmMedium: string
-  variant?: 'dark' | 'yellow'
+  variant?: 'dark' | 'yellow' | 'light-gray'
 }
 
 export default function CTABanner({ headline, sub, btnLabel, wppMsg, utmMedium, variant = 'dark' }: CTABannerProps) {
@@ -29,12 +29,14 @@ export default function CTABanner({ headline, sub, btnLabel, wppMsg, utmMedium, 
     return () => ctx.revert()
   }, [])
 
-  const isDark   = variant === 'dark'
-  const bg       = isDark ? '#111' : 'var(--color-yellow)'
+  const isDark      = variant === 'dark'
+  const isLightGray = variant === 'light-gray'
+
+  const bg       = isDark ? '#111' : isLightGray ? '#E0E0E0' : 'var(--color-yellow)'
   const textCol  = isDark ? '#fff' : '#0A0A0A'
-  const subCol   = isDark ? 'rgba(255,255,255,0.65)' : 'rgba(10,10,10,0.65)'
+  const subCol   = isDark ? 'rgba(255,255,255,0.65)' : 'rgba(10,10,10,0.6)'
   const btnBg    = isDark ? '#25D366' : '#0A0A0A'
-  const btnColor = '#fff'
+  const btnColor = isDark ? '#fff' : isLightGray ? '#fff' : '#fff'
   const border   = isDark ? '1px solid rgba(245,197,24,0.2)' : 'none'
 
   return (

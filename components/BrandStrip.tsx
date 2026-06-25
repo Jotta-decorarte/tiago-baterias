@@ -41,7 +41,7 @@ export default function BrandStrip() {
   return (
     <div
       aria-label="Marcas que trabalhamos"
-      style={{ background: 'var(--color-yellow)', padding: '10px 0 14px', overflow: 'hidden' }}
+      style={{ background: 'var(--color-yellow)', padding: '14px 0 20px', overflow: 'hidden' }}
     >
       <p style={{
         textAlign: 'center',
@@ -54,16 +54,16 @@ export default function BrandStrip() {
 
       <div
         ref={trackRef}
-        style={{ display: 'flex', alignItems: 'center', gap: 52, willChange: 'transform', width: 'max-content' }}
+        style={{ display: 'flex', alignItems: 'center', gap: 72, willChange: 'transform', width: 'max-content' }}
       >
         {ITEMS.map((brand, i) => (
-          <div key={i} style={{ flexShrink: 0, height: 44, display: 'flex', alignItems: 'center' }}>
+          <div key={i} style={{ flexShrink: 0, height: 64, display: 'flex', alignItems: 'center' }}>
             <Image
               src={brand.src}
               alt={brand.alt}
-              width={90}
-              height={44}
-              style={{ height: 36, width: 'auto', objectFit: 'contain' }}
+              width={130}
+              height={64}
+              style={{ height: 54, width: 'auto', objectFit: 'contain' }}
             />
           </div>
         ))}

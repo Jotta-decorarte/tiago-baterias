@@ -24,7 +24,7 @@ export default function Home() {
 
         {/* CTA 1 — após explicar como funciona, convida a pedir */}
         <CTABanner
-          variant="yellow"
+          variant="light-gray"
           headline="Precisa de uma bateria agora?"
           sub="Respondemos em minutos e chegamos até você em até 1 hora."
           btnLabel="Chamar no WhatsApp"
