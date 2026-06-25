@@ -85,7 +85,7 @@ export default function Hero() {
             Moura, Heliar, Bosch e muito mais — a bateria certa para o seu veículo.
           </p>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 'var(--space-6)' }}>
+          <div className="hero-btns" style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 'var(--space-6)' }}>
             <a
               ref={btnPrimRef}
               href={wppLink('Olá! Vim pelo site e quero pedir uma bateria. Me ajude a escolher a ideal para meu veículo.', 'hero-cta-principal')}
@@ -94,7 +94,7 @@ export default function Hero() {
               style={{ willChange: 'transform' }}
               {...mag(btnPrimRef)}
             >
-              <WppIcon /> Pedir pelo WhatsApp agora
+              <WppIcon /> Pedir pelo WhatsApp
             </a>
             <a
               ref={btnSecRef}
@@ -103,7 +103,7 @@ export default function Hero() {
               style={{ willChange: 'transform' }}
               {...mag(btnSecRef)}
             >
-              Ver catálogo de baterias
+              Ver catálogo
             </a>
           </div>
 

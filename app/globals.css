@@ -164,6 +164,38 @@ h4 { font-size: clamp(17px, 2vw, 20px); font-weight: 600; line-height: 1.3; }
 
 .btn-block { width: 100%; }
 
+/* Botões responsivos — mobile */
+@media (max-width: 600px) {
+  .btn {
+    font-size: 13px;
+    padding: 12px 18px;
+    min-height: 44px;
+    letter-spacing: 0.5px;
+    gap: 8px;
+  }
+  .btn-outline {
+    padding: 10.5px 16px;
+  }
+  /* Hero — botões em coluna, largura total */
+  .hero-btns {
+    flex-direction: column !important;
+    width: 100%;
+  }
+  .hero-btns .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  /* CTABanner — coluna no mobile */
+  .cta-banner-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+  .cta-banner-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* ============================================================
    CARDS
    ============================================================ */

@@ -46,7 +46,7 @@ export default function CTABanner({ headline, sub, btnLabel, wppMsg, utmMedium, 
         padding: 'var(--space-7) 0',
       }}
     >
-      <div className="container" style={{
+      <div className="container cta-banner-inner" style={{
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
@@ -67,7 +67,7 @@ export default function CTABanner({ headline, sub, btnLabel, wppMsg, utmMedium, 
         <a
           href={wppLink(wppMsg, utmMedium)}
           target="_blank" rel="noopener"
-          className="btn"
+          className="btn cta-banner-btn"
           style={{
             background: btnBg, color: btnColor,
             flexShrink: 0,
