@@ -68,6 +68,16 @@ export default function LeadForm() {
       fields.veiculo ? `Veículo: ${fields.veiculo}` : '',
     ].filter(Boolean).join('\n')
     setSubmitted(true)
+    // registra o lead no CRM da loja (não bloqueia o WhatsApp se falhar)
+    try {
+      const qs = new URLSearchParams(window.location.search)
+      fetch('/api/lead', {
+        method: 'POST',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...fields, campanha: qs.get('utm_campaign') || '' }),
+      }).catch(() => {})
+    } catch { /* ignora */ }
     window.open(wppLink(msg, 'form-cadastro'), '_blank', 'noopener')
   }
 
