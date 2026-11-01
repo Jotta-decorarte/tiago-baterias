@@ -371,6 +371,11 @@ async function removeLead(id){
   try{await api("/api/crm/leads/"+encodeURIComponent(id),{method:"DELETE"})}
   catch(e){leads=prev;render();throw e}
 }
+function stampStage(l,novaEtapa){
+  if((novaEtapa==="fechado"||novaEtapa==="perdido")&&!(l.etapa===novaEtapa&&l.fechadoEm))l.fechadoEm=new Date().toISOString();
+  if(novaEtapa!=="fechado"&&novaEtapa!=="perdido")l.fechadoEm="";
+  l.etapa=novaEtapa;
+}
 async function safe(fn,ok){
   try{await fn();if(ok)toast(ok)}
   catch(e){
