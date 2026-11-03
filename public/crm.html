@@ -123,6 +123,29 @@ label.f textarea{min-height:70px;resize:vertical}
 .wa{font-size:12.5px;color:var(--muted)}
 .wa a{color:var(--ok);font-weight:600}
 .confirm{background:var(--bad-soft);color:var(--bad);border-radius:8px;padding:10px;margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.chip.wa{background:var(--ok);border-color:transparent;color:#fff;font-weight:600}
+.card .last{font-size:12.5px;color:var(--muted);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.card .last b{color:var(--fg);font-weight:600}
+.card.unread{border-color:var(--ok)}
+.sec{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.sec h4{margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.chat{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto}
+.bub{max-width:82%;padding:7px 10px;border-radius:10px;font-size:13px;line-height:1.4;overflow-wrap:anywhere;white-space:pre-wrap}
+.bub.cliente{align-self:flex-start;background:var(--surface);border:1px solid var(--line)}
+.bub.loja{align-self:flex-end;background:var(--ok-soft)}
+.bub time{display:block;font-size:10.5px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.chat .vazio{color:var(--muted);font-size:12.5px;text-align:center;padding:8px}
+.meta-ev{display:flex;flex-wrap:wrap;gap:6px}
+.meta-ev span{font-size:12px;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.meta-ev span.on{background:var(--ok-soft);border-color:transparent;color:var(--ok);font-weight:600}
+.int{display:flex;flex-direction:column;gap:12px}
+.int .row{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.int .row strong{display:flex;align-items:center;gap:8px}
+.int .st{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600}
+.int .st.ok{background:var(--ok-soft);color:var(--ok)}.int .st.no{background:var(--warn-soft);color:var(--warn)}
+.int code{font-size:12px;background:var(--surface-2);padding:2px 6px;border-radius:5px;overflow-wrap:anywhere}
+.int .log{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.int .log .bad{color:var(--bad)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:13px;z-index:30}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
 .login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:40;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -156,6 +179,7 @@ html{background:var(--bg)}body{margin:0;padding-top:env(safe-area-inset-top,0px)
     </div>
     <div class="actions">
       <button class="btn" id="btnSair" type="button">Sair</button>
+      <button class="btn" id="btnInt" type="button">Integrações</button>
       <button class="btn" id="btnCsv" type="button">Exportar planilha</button>
       <button class="btn primary" id="btnNew">+ Novo lead</button>
     </div>
@@ -221,10 +245,13 @@ html{background:var(--bg)}body{margin:0;padding-top:env(safe-area-inset-top,0px)
       <datalist id="campList"></datalist>
       <label class="f">Etapa<select id="fEtapa"></select></label>
       <label class="f">Próximo retorno<input id="fFollow" type="date"></label>
+      <label class="f full">E-mail (opcional, melhora a qualificação na Meta)<input id="fEmail" type="email" inputmode="email" autocomplete="off"></label>
       <label class="f full" id="wrapMotivo" hidden>Motivo da perda<select id="fMotivo"><option value="">Selecione</option><option>Preço</option><option>Comprou em outro lugar</option><option>Não respondeu</option><option>Sem estoque</option><option>Desistiu</option><option>Outro</option></select></label>
       <label class="f full">Anotações<textarea id="fNotas" placeholder="Ex.: pediu entrega e instalação no local"></textarea></label>
     </div>
     <div class="wa" id="waLine" hidden></div>
+    <div class="sec" id="secMeta" hidden><h4>Enviado para a Meta</h4><div class="meta-ev" id="metaEv"></div></div>
+    <div class="sec" id="secChat" hidden><h4>Conversa no WhatsApp</h4><div class="chat" id="chat"></div></div>
     <div class="confirm" id="confirmDel" hidden>
       <span>Excluir este lead de vez?</span>
       <span class="actions"><button type="button" class="btn small" id="noDel">Cancelar</button><button type="button" class="btn small danger" id="yesDel">Excluir</button></span>
@@ -236,6 +263,13 @@ html{background:var(--bg)}body{margin:0;padding-top:env(safe-area-inset-top,0px)
   </form>
 </div>
 <div class="toast" id="toast" hidden></div>
+<div class="ov" id="ovInt" hidden>
+  <div class="modal" role="dialog" aria-labelledby="intTitle">
+    <h3 id="intTitle">Integrações</h3>
+    <div class="int" id="intBody"><div class="loading">Carregando…</div></div>
+    <div class="mfoot"><span></span><button type="button" class="btn" id="btnIntClose">Fechar</button></div>
+  </div>
+</div>
 
 <script>
 const STAGES=[
@@ -245,7 +279,8 @@ const STAGES=[
   {id:"fechado",nome:"Fechado",vazio:"Bateria vendida e instalada"},
   {id:"perdido",nome:"Perdido",vazio:"Não fechou, com o motivo anotado"}
 ];
-const ORIGENS=["Google Ads","WhatsApp","Instagram","Facebook","Indicação","Passou na loja","Ligação","Outro"];
+const ORIGENS=["Google Ads","WhatsApp","Anúncio Meta (WhatsApp)","Instagram","Facebook","Facebook Lead Ads","Site (Lista VIP)","Indicação","Passou na loja","Ligação","Webhook","Outro"];
+const META_NOMES={Lead:"Lead",QualifiedLead:"Qualificado",Purchase:"Compra"};
 const RECOMPRA_MESES=24;
 const CAMP_PADRAO="TIAGO COSTA DOS SANTOS";
 let investDia=20;
@@ -276,7 +311,7 @@ STAGES.forEach(s=>{
 function visible(l){
   if(filt.loja&&l.unidade!==filt.loja)return false;
   if(filt.orig&&l.origem!==filt.orig)return false;
-  if(filt.q){const q=filt.q.toLowerCase();const hay=[l.nome,l.telefone,l.veiculo,l.bateria,l.notas].join(" ").toLowerCase();if(!hay.includes(q)&&!(digits(q)&&digits(l.telefone).includes(digits(q))))return false}
+  if(filt.q){const q=filt.q.toLowerCase();const hay=[l.nome,l.telefone,l.veiculo,l.bateria,l.notas,l.email,l.waNome].join(" ").toLowerCase();if(!hay.includes(q)&&!(digits(q)&&digits(l.telefone).includes(digits(q))))return false}
   return true;
 }
 function recompra(l){if(!l.fechadoEm)return"";const d=new Date(l.fechadoEm);d.setMonth(d.getMonth()+RECOMPRA_MESES);return String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear()}
@@ -287,6 +322,7 @@ function render(){
   STAGES.forEach((s,i)=>{
     const list=$("l-"+s.id);
     const items=vis.filter(l=>l.etapa===s.id).sort((a,b)=>{
+      if((b.naoLidas>0)-(a.naoLidas>0))return (b.naoLidas>0)-(a.naoLidas>0);
       if(s.id==="fechado"||s.id==="perdido")return (b.fechadoEm||b.criadoEm||"").localeCompare(a.fechadoEm||a.criadoEm||"");
       return (a.followup||"9999").localeCompare(b.followup||"9999")||(b.criadoEm||"").localeCompare(a.criadoEm||"")});
     const soma=items.reduce((a,l)=>a+(Number(l.valor)||0),0);
@@ -294,6 +330,7 @@ function render(){
     if(!items.length){list.innerHTML=`<div class="empty">${s.vazio}</div>`;return}
     list.innerHTML=items.map(l=>{
       const chips=[];
+      if(l.naoLidas>0)chips.push(`<span class="chip wa">WhatsApp · ${l.naoLidas} nova${l.naoLidas>1?"s":""}</span>`);
       chips.push(`<span class="chip">${esc(l.unidade)}</span>`);
       if(l.origem)chips.push(`<span class="chip">${esc(l.origem)}</span>`);
       if(l.campanha)chips.push(`<span class="chip camp" title="Campanha">${esc(l.campanha)}</span>`);
@@ -305,9 +342,11 @@ function render(){
       if(s.id==="fechado"&&l.fechadoEm)chips.push(`<span class="chip rec">Troca prevista ${recompra(l)}</span>`);
       if(s.id==="perdido"&&l.motivoPerda)chips.push(`<span class="chip">${esc(l.motivoPerda)}</span>`);
       const car=[l.veiculo,l.bateria].filter(Boolean).join(" · ");
-      return `<article class="card" tabindex="0" data-id="${esc(l.id)}">
+      const last=l.ultimaMensagem?`<div class="last"><b>${l.ultimaMsgDe==="loja"?"Loja":"Cliente"}:</b> ${esc(l.ultimaMensagem)}</div>`:"";
+      return `<article class="card${l.naoLidas>0?" unread":""}" tabindex="0" data-id="${esc(l.id)}">
         <div class="r1"><span class="nm">${esc(l.nome)}</span>${l.valor?`<span class="val">${brl(l.valor)}</span>`:""}</div>
         ${car?`<div class="car">${esc(car)}</div>`:""}
+        ${last}
         <div class="chips">${chips.join("")}</div>
         ${canWrite?`<div class="mv"><button data-mv="-1" ${i===0?"disabled":""} aria-label="Voltar etapa">← ${i>0?STAGES[i-1].nome:""}</button><button data-mv="1" ${i===STAGES.length-1?"disabled":""} aria-label="Avançar etapa">${i<STAGES.length-1?STAGES[i+1].nome:""} →</button></div>`:""}
       </article>`}).join("");
@@ -363,7 +402,7 @@ async function api(path,opts){
 async function writeLead(l){
   const i=leads.findIndex(x=>x.id===l.id);const prev=i>=0?leads[i]:null;
   if(i>=0)leads[i]=l;else leads.push(l);render();
-  try{await api("/api/crm/leads",{method:"POST",body:JSON.stringify(l)})}
+  try{const d=await api("/api/crm/leads",{method:"POST",body:JSON.stringify(l)});if(d&&d.lead){const j=leads.findIndex(x=>x.id===l.id);if(j>=0){leads[j]={...leads[j],...d.lead};render()}}}
   catch(e){if(prev)leads[i]=prev;else leads=leads.filter(x=>x.id!==l.id);render();throw e}
 }
 async function removeLead(id){
@@ -405,15 +444,56 @@ function openModal(l,motivoFocus){
   $("mTitle").textContent=l&&leads.some(x=>x.id===l.id)?"Editar lead":"Novo lead";
   $("fNome").value=l?.nome||"";$("fTel").value=l?.telefone||"";$("fUnidade").value=l?.unidade||filt.loja||"Anchieta";
   $("fVeic").value=l?.veiculo||"";$("fBat").value=l?.bateria||"";$("fValor").value=l?.valor?String(l.valor).replace(".",","):"";
-  $("fOrig").value=l?.origem||"Google Ads";$("fEtapa").value=l?.etapa||"novo";
+  const og=l?.origem||"Google Ads";if(![...$("fOrig").options].some(o=>o.value===og))$("fOrig").add(new Option(og,og));
+  $("fOrig").value=og;$("fEmail").value=l?.email||"";$("fEtapa").value=l?.etapa||"novo";
   $("fCamp").value=l?l.campanha||"":CAMP_PADRAO;$("fFollow").value=l?.followup||(l?"":today());
   $("fMotivo").value=l?.motivoPerda||"";$("fNotas").value=l?.notas||"";
   $("btnDel").hidden=!(l&&leads.some(x=>x.id===l.id))||!canWrite;$("confirmDel").hidden=true;
   [...$("form").elements].forEach(el=>{if(el.id&&el.id.startsWith("f"))el.disabled=!canWrite});$("btnSave").hidden=!canWrite;
   syncMotivo();updWa();$("ov").hidden=false;
+  const salvo=l&&leads.some(x=>x.id===l.id);
+  $("secMeta").hidden=!salvo;
+  if(salvo){const ev=l.eventosMeta||[];$("metaEv").innerHTML=Object.entries(META_NOMES).map(([k,n])=>`<span class="${ev.includes(k)?"on":""}">${ev.includes(k)?"✓ ":""}${n}</span>`).join("")}
+  loadChat(salvo?l:null);
   setTimeout(()=>(motivoFocus?$("fMotivo"):$("fNome")).focus(),30);
 }
-function closeModal(){$("ov").hidden=true;editing=null}
+function closeModal(){$("ov").hidden=true;editing=null;chatFor=null}
+let chatFor=null;
+function hora(iso){try{const d=new Date(iso);return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}catch(e){return""}}
+async function loadChat(l){
+  chatFor=l?l.id:null;const box=$("chat");
+  if(!l||!(l.ultimaMsgEm||l.naoLidas)){$("secChat").hidden=true;return}
+  $("secChat").hidden=false;box.innerHTML='<div class="vazio">Carregando conversa…</div>';
+  try{
+    const d=await api("/api/crm/leads/"+encodeURIComponent(l.id)+"/mensagens");if(chatFor!==l.id)return;
+    const ms=d.mensagens||[];
+    box.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.de==="loja"?"loja":"cliente"}">${esc(m.texto)}<time>${hora(m.em)}</time></div>`).join(""):'<div class="vazio">Nenhuma mensagem guardada ainda.</div>';
+    box.scrollTop=box.scrollHeight;
+    if(l.naoLidas>0){api("/api/crm/leads/"+encodeURIComponent(l.id)+"/mensagens",{method:"POST"}).catch(()=>{});const x=leads.find(z=>z.id===l.id);if(x){x.naoLidas=0;render()}}
+  }catch(e){if(chatFor===l.id)box.innerHTML='<div class="vazio">Não foi possível carregar a conversa.</div>'}
+}
+async function openInt(){
+  $("ovInt").hidden=false;const b=$("intBody");b.innerHTML='<div class="loading">Carregando…</div>';
+  const base=location.origin;
+  try{
+    const d=await api("/api/crm/status");
+    const st=on=>`<span class="st ${on?"ok":"no"}">${on?"Ativo":"Falta configurar"}</span>`;
+    const log=(d.meta.log||[]).slice(0,6).map(x=>`<div>${hora(x.em)} · ${META_NOMES[x.evento]||esc(x.evento)} · ${x.ok?"enviado":`<span class="bad">erro: ${esc(x.erro||"")}</span>`}</div>`).join("")||"<div>Nenhum evento enviado ainda.</div>";
+    b.innerHTML=`
+      <div class="row"><strong>WhatsApp (API oficial) ${st(d.whatsapp.configurado)}</strong>
+        <div>URL de callback: <code>${base}/api/whatsapp/webhook</code></div>
+        <div class="log">${d.whatsapp.ultimo?`Último aviso recebido: ${hora(d.whatsapp.ultimo.em)}`:"Nenhuma mensagem recebida ainda."}${d.whatsapp.configurado&&!d.whatsapp.assinatura?" · Assinatura da Meta não configurada (WA_APP_SECRET).":""}</div></div>
+      <div class="row"><strong>Meta Conversions API ${st(d.meta.configurado)}</strong>
+        <div class="log">Novo lead → Lead · Orçamento → Qualificado · Fechado → Compra com valor${d.meta.teste?" · <b>modo teste ligado</b>":""}</div>
+        <div class="log">${log}</div></div>
+      <div class="row"><strong>Webhook de entrada ${st(d.webhook.configurado)}</strong>
+        <div>POST <code>${base}/api/crm/webhook</code></div>
+        <div class="log">Cabeçalho <code>X-CRM-Token</code> com o token configurado. Campos: nome, telefone, email, veiculo, origem, campanha, unidade, notas.</div></div>`;
+  }catch(e){b.innerHTML='<div class="loading">Não foi possível carregar as integrações.</div>'}
+}
+$("btnInt").addEventListener("click",openInt);
+$("btnIntClose").addEventListener("click",()=>{$("ovInt").hidden=true});
+$("ovInt").addEventListener("click",e=>{if(e.target===$("ovInt"))$("ovInt").hidden=true});
 function syncMotivo(){$("wrapMotivo").hidden=$("fEtapa").value!=="perdido"}
 function updWa(){const d=digits($("fTel").value);const w=$("waLine");if(d.length>=10){const n=d.startsWith("55")?d:"55"+d;w.innerHTML=`Abrir conversa: <a href="https://wa.me/${n}" target="_blank" rel="noopener">wa.me/${n}</a>`;w.hidden=false}else w.hidden=true}
 $("fEtapa").addEventListener("change",syncMotivo);
@@ -428,7 +508,7 @@ $("invInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefaul
 $("btnNew").addEventListener("click",()=>openModal(null));
 $("btnCancel").addEventListener("click",closeModal);
 $("ov").addEventListener("click",e=>{if(e.target===$("ov"))closeModal()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("ov").hidden)closeModal()});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("ovInt").hidden)$("ovInt").hidden=true;else if(!$("ov").hidden)closeModal()});
 $("btnDel").addEventListener("click",()=>{$("confirmDel").hidden=false});
 $("noDel").addEventListener("click",()=>{$("confirmDel").hidden=true});
 $("yesDel").addEventListener("click",()=>{const id=editing?.id;closeModal();if(id)safe(()=>removeLead(id),"Lead excluído")});
@@ -438,7 +518,7 @@ $("form").addEventListener("submit",e=>{
   const isNew=!editing||!leads.some(x=>x.id===editing.id);
   const l=editing&&editing.id?{...editing}:{id:"l"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),criadoEm:new Date().toISOString(),fechadoEm:""};
   Object.assign(l,{nome,telefone:$("fTel").value.trim(),unidade:$("fUnidade").value,veiculo:$("fVeic").value.trim(),bateria:$("fBat").value.trim(),
-    valor:parseVal($("fValor").value),origem:$("fOrig").value,campanha:$("fCamp").value.trim(),followup:$("fFollow").value,notas:$("fNotas").value.trim(),
+    valor:parseVal($("fValor").value),origem:$("fOrig").value,email:$("fEmail").value.trim(),campanha:$("fCamp").value.trim(),followup:$("fFollow").value,notas:$("fNotas").value.trim(),
     motivoPerda:$("fEtapa").value==="perdido"?$("fMotivo").value:""});
   stampStage(l,$("fEtapa").value);
   closeModal();safe(()=>writeLead(l),isNew?"Lead adicionado":"Alterações salvas");
@@ -447,9 +527,9 @@ function applyWriteState(){$("btnNew").hidden=!canWrite;$("btnInv").hidden=!canW
 
 // CSV
 function csv(){
-  const head=["Nome","Telefone","Loja","Veículo","Bateria","Valor","Origem","Campanha","Etapa","Próximo retorno","Criado em","Fechado em","Motivo da perda","Anotações"];
+  const head=["Nome","Telefone","Loja","Veículo","Bateria","Valor","E-mail","Origem","Campanha","Etapa","Próximo retorno","Criado em","Fechado em","Motivo da perda","Anotações"];
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
-  const rows=leads.map(l=>[l.nome,l.telefone,l.unidade,l.veiculo,l.bateria,String(l.valor||0).replace(".",","),l.origem,l.campanha,(STAGES.find(s=>s.id===l.etapa)||{}).nome,l.followup,(l.criadoEm||"").slice(0,10),(l.fechadoEm||"").slice(0,10),l.motivoPerda,l.notas].map(q).join(";"));
+  const rows=leads.map(l=>[l.nome,l.telefone,l.unidade,l.veiculo,l.bateria,String(l.valor||0).replace(".",","),l.email,l.origem,l.campanha,(STAGES.find(s=>s.id===l.etapa)||{}).nome,l.followup,(l.criadoEm||"").slice(0,10),(l.fechadoEm||"").slice(0,10),l.motivoPerda,l.notas].map(q).join(";"));
   return "﻿"+[head.map(q).join(";"),...rows].join("\r\n");
 }
 

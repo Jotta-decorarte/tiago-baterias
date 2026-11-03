@@ -109,7 +109,18 @@ export type Lead = {
   motivoPerda: string
   criadoEm: string
   fechadoEm: string
+  email?: string
+  // campos gerenciados pelo servidor (a tela não sobrescreve)
+  ultimaMensagem?: string
+  ultimaMsgEm?: string
+  ultimaMsgDe?: 'cliente' | 'loja'
+  naoLidas?: number
+  ctwaClid?: string
+  waNome?: string
+  eventosMeta?: string[]
 }
+
+export const SERVER_FIELDS = ['ultimaMensagem', 'ultimaMsgEm', 'ultimaMsgDe', 'naoLidas', 'ctwaClid', 'waNome', 'eventosMeta'] as const
 
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '')
 
@@ -136,6 +147,83 @@ export function cleanLead(input: Record<string, unknown>): Lead | null {
     motivoPerda: str(input.motivoPerda, 60),
     criadoEm: str(input.criadoEm, 40) || new Date().toISOString(),
     fechadoEm: str(input.fechadoEm, 40),
+    email: str(input.email, 120),
+  }
+}
+
+/** Chave de telefone que ignora o 55 e o nono dígito (o WhatsApp às vezes manda sem ele). */
+export function phoneKey(tel: string): string {
+  let d = String(tel || '').replace(/\D/g, '')
+  if (d.length >= 12 && d.startsWith('55')) d = d.slice(2)
+  if (d.length < 10) return ''
+  return d.slice(0, 2) + d.slice(-8)
+}
+
+export async function getAllLeads(): Promise<Lead[]> {
+  const flat = (await redis(['HGETALL', LEADS_KEY])) as string[] | null
+  const out: Lead[] = []
+  if (Array.isArray(flat)) {
+    for (let i = 1; i < flat.length; i += 2) {
+      try { out.push(JSON.parse(flat[i]) as Lead) } catch { /* ignora */ }
+    }
+  }
+  return out
+}
+
+export async function getLead(id: string): Promise<Lead | null> {
+  const raw = (await redis(['HGET', LEADS_KEY, id])) as string | null
+  if (!raw) return null
+  try { return JSON.parse(raw) as Lead } catch { return null }
+}
+
+export async function saveLead(lead: Lead): Promise<void> {
+  await redis(['HSET', LEADS_KEY, lead.id, JSON.stringify(lead)])
+}
+
+/** Lead aberto mais recente com o mesmo telefone (ou o mais recente de todos, se só houver fechados). */
+export async function findLeadByPhone(tel: string, leads?: Lead[]): Promise<Lead | null> {
+  const k = phoneKey(tel)
+  if (!k) return null
+  const all = (leads || (await getAllLeads())).filter((l) => phoneKey(l.telefone) === k)
+  if (!all.length) return null
+  all.sort((a, b) => (b.criadoEm || '').localeCompare(a.criadoEm || ''))
+  return all.find((l) => l.etapa !== 'fechado' && l.etapa !== 'perdido') || all[0]
+}
+
+export const msgsKey = (leadId: string) => `crm:msgs:${leadId}`
+
+export type Mensagem = { id: string; de: 'cliente' | 'loja'; texto: string; tipo: string; em: string }
+
+export async function addMessage(leadId: string, m: Mensagem): Promise<void> {
+  await redis(['LPUSH', msgsKey(leadId), JSON.stringify(m)])
+  await redis(['LTRIM', msgsKey(leadId), 0, 299])
+}
+
+export function newId(prefix: string): string {
+  return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
+}
+
+export function hojeRJ(): string {
+  return new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10)
+}
+
+export function blankLead(p: Partial<Lead> & { nome: string; telefone: string }): Lead {
+  return {
+    id: newId('w'),
+    unidade: 'Anchieta',
+    veiculo: '',
+    bateria: '',
+    valor: 0,
+    origem: 'Outro',
+    campanha: '',
+    etapa: 'novo',
+    followup: hojeRJ(),
+    notas: '',
+    motivoPerda: '',
+    criadoEm: new Date().toISOString(),
+    fechadoEm: '',
+    email: '',
+    ...p,
   }
 }
 

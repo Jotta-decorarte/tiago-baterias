@@ -1,4 +1,5 @@
-import { LEADS_KEY, clientIp, crmConfigured, json, rateLimit, redis } from '@/lib/crm'
+import { clientIp, crmConfigured, json, rateLimit, readCookie } from '@/lib/crm'
+import { intakeLead } from '@/lib/intake'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,26 +20,25 @@ export async function POST(req: Request) {
 
   try {
     if (!(await rateLimit(`lead:${clientIp(req)}`, 5, 60 * 60))) return json({ erro: 'muitas_tentativas' }, 429)
-    const id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
-    const email = s(body.email, 120)
-    const lead = {
-      id,
-      nome,
-      telefone,
-      unidade: 'Anchieta',
-      veiculo: s(body.veiculo, 120),
-      bateria: '',
-      valor: 0,
-      origem: 'Site (Lista VIP)',
-      campanha: s(body.campanha, 120),
-      etapa: 'novo',
-      followup: new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10),
-      notas: email ? `E-mail: ${email}` : '',
-      motivoPerda: '',
-      criadoEm: new Date().toISOString(),
-      fechadoEm: '',
-    }
-    await redis(['HSET', LEADS_KEY, id, JSON.stringify(lead)])
+    await intakeLead(
+      {
+        id: s(body.id, 64),
+        nome,
+        telefone,
+        email: s(body.email, 120),
+        veiculo: s(body.veiculo, 120),
+        origem: 'Site (Lista VIP)',
+        campanha: s(body.campanha, 120),
+      },
+      {
+        fonte: 'website',
+        url: s(body.url, 500) || 'https://www.tiagobaterias.com.br/',
+        ip: clientIp(req) !== 'desconhecido' ? clientIp(req) : undefined,
+        userAgent: req.headers.get('user-agent') || undefined,
+        fbp: readCookie(req, '_fbp') || undefined,
+        fbc: readCookie(req, '_fbc') || undefined,
+      },
+    )
     return json({ ok: true })
   } catch {
     return json({ erro: 'banco_indisponivel' }, 503)

@@ -1,4 +1,5 @@
-import { LEADS_KEY, cleanLead, isAuthed, json, redis } from '@/lib/crm'
+import { SERVER_FIELDS, cleanLead, getAllLeads, getLead, isAuthed, json, saveLead } from '@/lib/crm'
+import { syncMetaEvents } from '@/lib/meta'
 
 export const dynamic = 'force-dynamic'
 
@@ -6,20 +7,13 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: Request) {
   if (!(await isAuthed(req))) return json({ erro: 'nao_autorizado' }, 401)
   try {
-    const flat = (await redis(['HGETALL', LEADS_KEY])) as string[] | null
-    const leads: unknown[] = []
-    if (Array.isArray(flat)) {
-      for (let i = 1; i < flat.length; i += 2) {
-        try { leads.push(JSON.parse(flat[i])) } catch { /* ignora registro corrompido */ }
-      }
-    }
-    return json({ leads })
+    return json({ leads: await getAllLeads() })
   } catch {
     return json({ erro: 'banco_indisponivel' }, 503)
   }
 }
 
-// Cria ou atualiza um lead
+// Cria ou atualiza um lead. Campos do WhatsApp e da Meta são preservados do que já está salvo.
 export async function POST(req: Request) {
   if (!(await isAuthed(req))) return json({ erro: 'nao_autorizado' }, 401)
   let body: Record<string, unknown>
@@ -27,7 +21,23 @@ export async function POST(req: Request) {
   const lead = cleanLead(body)
   if (!lead) return json({ erro: 'dados_invalidos' }, 400)
   try {
-    await redis(['HSET', LEADS_KEY, lead.id, JSON.stringify(lead)])
+    const atual = await getLead(lead.id)
+    if (atual) {
+      for (const f of SERVER_FIELDS) {
+        if (atual[f] !== undefined) (lead as Record<string, unknown>)[f] = atual[f]
+      }
+      if (!lead.email && atual.email) lead.email = atual.email
+    }
+    await saveLead(lead)
+
+    // Conversions API: manda Lead / QualifiedLead / Purchase conforme a etapa
+    const antes = lead.eventosMeta || []
+    const depois = await syncMetaEvents(lead, antes)
+    if (depois.length !== antes.length) {
+      lead.eventosMeta = depois
+      const fresco = await getLead(lead.id)
+      await saveLead({ ...(fresco || lead), eventosMeta: depois })
+    }
     return json({ ok: true, lead })
   } catch {
     return json({ erro: 'banco_indisponivel' }, 503)

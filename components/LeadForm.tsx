@@ -71,12 +71,16 @@ export default function LeadForm() {
     // registra o lead no CRM da loja (não bloqueia o WhatsApp se falhar)
     try {
       const qs = new URLSearchParams(window.location.search)
+      const id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
       fetch('/api/lead', {
         method: 'POST',
         keepalive: true,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...fields, campanha: qs.get('utm_campaign') || '' }),
+        body: JSON.stringify({ ...fields, id, url: window.location.href, campanha: qs.get('utm_campaign') || '' }),
       }).catch(() => {})
+      // Pixel no navegador com o mesmo event_id do servidor: a Meta conta uma vez só
+      const fbq = (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq
+      if (fbq) fbq('track', 'Lead', { content_name: 'Lista VIP' }, { eventID: `${id}:Lead` })
     } catch { /* ignora */ }
     window.open(wppLink(msg, 'form-cadastro'), '_blank', 'noopener')
   }
